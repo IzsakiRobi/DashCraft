@@ -4,6 +4,7 @@ The original GNOME dash on your desktop, with:
 
 - Application unread badges and notification counters
 - Smooth icon and dock animations
+- Custom Show Apps icon with image preview
 - Live dash color and transparency controls
 - Adaptive panel transparency
 - Separate Dash and Panel preferences

@@ -5,6 +5,7 @@ import St from 'gi://St';
 import {Animations} from './Animations.js';
 import {Badges} from './Badges.js';
 import {Colors} from './Colors.js';
+import {Icons} from './Icons.js';
 import {Panel} from './Panel.js';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -74,6 +75,7 @@ export default class DashCraft extends Extension {
         });
         this._panel = new Panel(this._settings);
         this._colors = new Colors(this._dash, this._settings);
+        this._icons = new Icons(this._dash, this._settings);
         this._badges = new Badges(this._dash, this._settings);
         this._animations = new Animations(this._dash, () => this._desktop);
         this._syncLocation();
@@ -133,6 +135,7 @@ export default class DashCraft extends Extension {
         this._animations?.destroy();
         this._badges?.destroy();
         this._colors?.destroy();
+        this._icons?.destroy();
         this._panel?.destroy();
         for (const [object, id] of this._connections ?? [])
             object.disconnect(id);
@@ -144,6 +147,6 @@ export default class DashCraft extends Extension {
         }
         this._slot?.destroy();
         this._host = this._slot = this._layout = this._parent = this._dash = null;
-        this._settings = this._animations = this._badges = this._colors = this._panel = null;
+        this._settings = this._animations = this._badges = this._colors = this._icons = this._panel = null;
     }
 }

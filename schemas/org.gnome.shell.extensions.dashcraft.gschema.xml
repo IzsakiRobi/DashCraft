@@ -22,6 +22,11 @@
       <summary>Use custom dock background</summary>
       <description>When false, use the system theme's original dash appearance.</description>
     </key>
+    <key name="show-apps-icon" type="s">
+      <default>''</default>
+      <summary>Show Apps icon</summary>
+      <description>Path to the saved custom icon. Empty uses the system icon.</description>
+    </key>
     <key name="show-badges" type="b">
       <default>true</default>
       <summary>Show badges</summary>

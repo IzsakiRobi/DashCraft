@@ -1,6 +1,8 @@
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk?version=4.0';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GdkPixbuf from 'gi://GdkPixbuf';
 import Gtk from 'gi://Gtk?version=4.0';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
@@ -24,6 +26,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         settings.bind('show-badges', badges, 'active', Gio.SettingsBindFlags.DEFAULT);
         group.add(badges);
         page.add(group);
+        const closeIconPreferences = this._addIconPreferences(window, page, settings);
 
         const appearance = new Adw.PreferencesGroup({
             title: 'Dock background',
@@ -187,6 +190,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
             settings.connect('changed::background-color', updateColor),
         ];
         window.connect('close-request', () => {
+            closeIconPreferences();
             for (const id of ids)
                 settings.disconnect(id);
             ids.length = 0;
@@ -195,5 +199,146 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         window.add(page);
         window.add(panelPage);
         window.set_default_size(560, 560);
+    }
+    /* ----- Show Apps Preferences ----- */
+
+    _addIconPreferences(window, page, settings) {
+        const group = new Adw.PreferencesGroup({title: 'Show Apps icon'});
+        const controls = new Gtk.Box({
+            spacing: 16,
+            margin_start: 16,
+            margin_end: 16,
+            margin_top: 14,
+            margin_bottom: 14,
+        });
+        const preview = new Gtk.Image({pixel_size: 64});
+        const frame = new Gtk.Frame({
+            child: preview,
+            width_request: 64,
+            height_request: 64,
+            valign: Gtk.Align.CENTER,
+        });
+        controls.append(frame);
+        const buttons = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 6,
+            valign: Gtk.Align.CENTER,
+        });
+        const change = new Gtk.Button({label: 'Change “Show Apps” icon'});
+        const restore = new Gtk.Button({label: 'Restore original'});
+        buttons.append(change);
+        buttons.append(restore);
+        controls.append(buttons);
+        const row = new Adw.PreferencesRow();
+        row.set_child(controls);
+        group.add(row);
+        page.add(group);
+
+        const update = () => {
+            const path = settings.get_string('show-apps-icon');
+            if (path && GLib.file_test(path, GLib.FileTest.IS_REGULAR))
+                preview.set_from_gicon(new Gio.FileIcon({file: Gio.File.new_for_path(path)}));
+            else
+                preview.set_from_icon_name('view-app-grid-symbolic');
+            restore.sensitive = path !== '';
+        };
+        const changedId = settings.connect('changed::show-apps-icon', update);
+        update();
+        const cancellable = new Gio.Cancellable();
+        change.connect('clicked', () => {
+            const filter = new Gtk.FileFilter({name: 'Images'});
+            filter.add_pixbuf_formats();
+            const filters = new Gio.ListStore({item_type: Gtk.FileFilter});
+            filters.append(filter);
+            const dialog = new Gtk.FileDialog({
+                title: 'Choose Show Apps icon',
+                modal: true,
+                filters,
+                default_filter: filter,
+            });
+            change.sensitive = false;
+            dialog.open(window, cancellable, (source, result) => {
+                let file;
+                try {
+                    file = source.open_finish(result);
+                } catch (error) {
+                    change.sensitive = true;
+                    if (!cancellable.is_cancelled() &&
+                        !error.matches(Gtk.DialogError, Gtk.DialogError.DISMISSED) &&
+                        !error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                        this._showIconError(window, error);
+                    return;
+                }
+                file.load_contents_async(cancellable, (selected, loaded) => {
+                    try {
+                        const [, bytes] = selected.load_contents_finish(loaded);
+                        if (cancellable.is_cancelled())
+                            return;
+                        const path = this._saveIcon(bytes);
+                        const previous = settings.get_string('show-apps-icon');
+                        settings.set_string('show-apps-icon', path);
+                        if (previous !== path)
+                            this._removeIcon(previous);
+                    } catch (error) {
+                        if (!cancellable.is_cancelled())
+                            this._showIconError(window, error);
+                    } finally {
+                        change.sensitive = true;
+                    }
+                });
+            });
+        });
+        restore.connect('clicked', () => {
+            const previous = settings.get_string('show-apps-icon');
+            settings.reset('show-apps-icon');
+            this._removeIcon(previous);
+        });
+        return () => {
+            cancellable.cancel();
+            settings.disconnect(changedId);
+        };
+    }
+
+    /* ----- Saved Icon Files ----- */
+
+    _iconDirectory() {
+        return GLib.build_filenamev([GLib.get_user_data_dir(), 'dashcraft', 'icons']);
+    }
+
+    _saveIcon(bytes) {
+        const loader = new GdkPixbuf.PixbufLoader();
+        try {
+            loader.write(bytes);
+        } finally {
+            loader.close();
+        }
+        if (!loader.get_pixbuf())
+            throw new Error('The selected file could not be read as an image.');
+        const extension = loader.get_format().get_extensions()[0];
+        const digest = GLib.compute_checksum_for_data(GLib.ChecksumType.SHA256, bytes);
+        const directory = this._iconDirectory();
+        GLib.mkdir_with_parents(directory, 0o700);
+        const path = GLib.build_filenamev([directory, `show-apps-${digest}.${extension}`]);
+        Gio.File.new_for_path(path).replace_contents(
+            bytes, null, false, Gio.FileCreateFlags.PRIVATE, null);
+        return path;
+    }
+
+    _removeIcon(path) {
+        if (!path || GLib.path_get_dirname(path) !== this._iconDirectory() ||
+            !/^show-apps-[0-9a-f]{64}\.[a-z0-9]+$/.test(GLib.path_get_basename(path)))
+            return;
+        const file = Gio.File.new_for_path(path);
+        if (file.query_exists(null))
+            file.delete(null);
+    }
+
+    _showIconError(window, error) {
+        const dialog = new Adw.AlertDialog({
+            heading: 'Could not load icon',
+            body: error.message,
+        });
+        dialog.add_response('close', 'Close');
+        dialog.present(window);
     }
 }
