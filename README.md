@@ -16,4 +16,4 @@ Run `./install.sh` from the cloned repository, or install the extension ZIP from
 
 Log out and back in, then enable **DashCraft**.
 
-UUID: `dashcraft@izsakirobi.github.io`
+UUID: `dashcraft@ostricks.com`
