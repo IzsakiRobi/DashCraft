@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <schema id="org.gnome.shell.extensions.native-dash" path="/org/gnome/shell/extensions/native-dash/">
+  <schema id="org.gnome.shell.extensions.dashcraft" path="/org/gnome/shell/extensions/dashcraft/">
     <key name="show-dock" type="b">
       <default>true</default>
       <summary>Show/Hide</summary>

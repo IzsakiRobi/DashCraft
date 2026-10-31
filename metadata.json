@@ -1,12 +1,12 @@
 {
-  "uuid": "io.github.IzsakiRobi.Native.Dash",
+  "uuid": "dashcraft@izsakirobi.github.io",
   "name": "DashCraft",
   "description": "The original GNOME dash on your desktop, with application badges, smooth animations, and customizable dash and panel backgrounds.",
   "shell-version": [
     "50",
     "51"
   ],
-  "settings-schema": "org.gnome.shell.extensions.native-dash",
-  "version": 28,
-  "url": "https://github.com/IzsakiRobi/DashCraft"
+  "settings-schema": "org.gnome.shell.extensions.dashcraft",
+  "url": "https://github.com/IzsakiRobi/DashCraft",
+  "version-name": "0.5"
 }
