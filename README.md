@@ -18,6 +18,12 @@ Run `./install.sh` from the cloned repository, or download the ZIP from [Release
 gnome-extensions install dashcraft@ostricks.com.shell-extension.zip
 ```
 
+For manual extraction, use the directory `~/.local/share/gnome-shell/extensions/dashcraft@ostricks.com/` and compile its settings schema:
+
+```sh
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/dashcraft@ostricks.com/schemas
+```
+
 Log out and back in, then enable **DashCraft**.
 
 UUID: `dashcraft@ostricks.com`
