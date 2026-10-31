@@ -26,7 +26,8 @@ export class Panel {
         this._file = file;
         this._loaded = false;
         try {
-            this._connect(settings, 'changed::panel-transparency', () => this._updateColor());
+            for (const key of ['panel-transparency', 'panel-background-color', 'panel-items-color'])
+                this._connect(settings, `changed::${key}`, () => this._updateColor());
             this._connect(global.display, 'window-created', (_display, window) => this._watchWindow(window));
             this._connect(global.workspace_manager, 'active-workspace-changed', () => this._sync());
             this._connect(Main.layoutManager, 'monitors-changed', () => this._sync());
@@ -60,12 +61,22 @@ export class Panel {
     _updateColor() {
         const color = this._color;
         const alpha = color.alpha / 255 * (1 - this._settings.get_int('panel-transparency') / 100);
-        const rgb = `${color.red}, ${color.green}, ${color.blue}`;
-        const css = `#panel.${MANAGED_CLASS} { ` +
+        const saved = this._settings.get_string('panel-background-color');
+        const rgb = /^#[0-9a-f]{6}$/i.test(saved)
+            ? [1, 3, 5].map(offset => parseInt(saved.slice(offset, offset + 2), 16)).join(', ')
+            : `${color.red}, ${color.green}, ${color.blue}`;
+        let css = `#panel.${MANAGED_CLASS} { ` +
             `background-color: rgba(${rgb}, ${alpha.toFixed(4)}); } ` +
             `#panel.${MANAGED_CLASS}.${SOLID_CLASS} { ` +
             `background-color: rgba(${rgb}, ${(color.alpha / 255).toFixed(4)}); } ` +
             `#panel.${MANAGED_CLASS}:overview { background-color: transparent; }`;
+        const items = this._settings.get_string('panel-items-color');
+        if (/^#[0-9a-f]{6}$/i.test(items)) {
+            const panel = `#panel.${MANAGED_CLASS}`;
+            css += `${panel}, ${panel} .panel-button, ${panel} StLabel, ${panel} StIcon { ` +
+                `color: ${items} !important; } ` +
+                `${panel} .workspace-dot { background-color: ${items} !important; }`;
+        }
         if (this._loaded)
             this._theme.unload_stylesheet(this._file);
         this._loaded = false;

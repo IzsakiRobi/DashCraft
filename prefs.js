@@ -134,8 +134,8 @@ export default class DashCraftPreferences extends ExtensionPreferences {
 
         const panelPage = new Adw.PreferencesPage({title: 'Panel', icon_name: 'video-display-symbolic'});
         const panelGroup = new Adw.PreferencesGroup({
-            title: 'Panel background',
-            description: '0%: original background · 100%: transparent',
+            title: 'Panel appearance',
+            description: '0%: solid · 100%: transparent',
         });
         const panelControls = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
@@ -161,6 +161,10 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         const panelRow = new Adw.PreferencesRow();
         panelRow.set_child(panelControls);
         panelGroup.add(panelRow);
+        const panelColorIds = [
+            this._addPanelColor(panelGroup, settings, 'panel-background-color', 'Panel Background Color', '#000000'),
+            this._addPanelColor(panelGroup, settings, 'panel-items-color', 'Items Color', '#ffffff'),
+        ];
         const panelRestoreRow = new Adw.ActionRow({title: 'System appearance'});
         const panelRestore = new Gtk.Button({label: 'Restore original', valign: Gtk.Align.CENTER});
         panelRestoreRow.add_suffix(panelRestore);
@@ -171,7 +175,9 @@ export default class DashCraftPreferences extends ExtensionPreferences {
             const value = settings.get_int('panel-transparency');
             panelScale.set_value(value);
             panelPercentage.label = `${value}%`;
-            panelRestore.sensitive = value !== 0;
+            panelRestore.sensitive = value !== 0 ||
+                settings.get_string('panel-background-color') !== '' ||
+                settings.get_string('panel-items-color') !== '';
         };
         updatePanel();
         panelScale.connect('value-changed', () => {
@@ -179,11 +185,17 @@ export default class DashCraftPreferences extends ExtensionPreferences {
             if (settings.get_int('panel-transparency') !== value)
                 settings.set_int('panel-transparency', value);
         });
-        panelRestore.connect('clicked', () => settings.reset('panel-transparency'));
+        panelRestore.connect('clicked', () => {
+            for (const key of ['panel-transparency', 'panel-background-color', 'panel-items-color'])
+                settings.reset(key);
+        });
 
         /* ----- Settings Lifecycle ----- */
 
         const ids = [
+            ...panelColorIds,
+            settings.connect('changed::panel-background-color', updatePanel),
+            settings.connect('changed::panel-items-color', updatePanel),
             settings.connect('changed::panel-transparency', updatePanel),
             settings.connect('changed::custom-background', updateMode),
             settings.connect('changed::background-transparency', updateTransparency),
@@ -200,6 +212,47 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         window.add(panelPage);
         window.set_default_size(560, 820);
     }
+
+    /* ----- Panel Colors ----- */
+
+    _addPanelColor(group, settings, key, title, fallback) {
+        const row = new Adw.ActionRow({title});
+        const button = new Gtk.ColorDialogButton({
+            dialog: new Gtk.ColorDialog({title, modal: true, with_alpha: false}),
+            valign: Gtk.Align.CENTER,
+            width_request: 40,
+            height_request: 40,
+            tooltip_text: title,
+        });
+        row.add_suffix(button);
+        row.activatable_widget = button;
+        group.add(row);
+        let updating = false;
+        const update = () => {
+            updating = true;
+            const saved = settings.get_string(key);
+            const rgba = new Gdk.RGBA();
+            if (!rgba.parse(saved))
+                rgba.parse(fallback);
+            if (!button.rgba.equal(rgba))
+                button.rgba = rgba;
+            row.subtitle = saved ? saved.toUpperCase() : 'System theme';
+            updating = false;
+        };
+        update();
+        button.connect('notify::rgba', () => {
+            if (updating)
+                return;
+            const rgba = button.rgba;
+            const hex = [rgba.red, rgba.green, rgba.blue]
+                .map(channel => Math.round(channel * 255).toString(16).padStart(2, '0')).join('');
+            const color = `#${hex}`;
+            if (settings.get_string(key) !== color)
+                settings.set_string(key, color);
+        });
+        return settings.connect(`changed::${key}`, update);
+    }
+
     /* ----- Show Apps Preferences ----- */
 
     _addIconPreferences(window, page, settings) {
