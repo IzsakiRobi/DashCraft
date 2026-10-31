@@ -7,7 +7,7 @@ The original GNOME dash on your desktop, with:
 - Custom Show Apps icon with image preview
 - Live dash color and transparency controls
 - Adaptive panel transparency
-- Separate Dash and Panel preferences
+- Separate Dash and Panel preferences, accessible by right-clicking Show Apps
 
 GNOME Shell 50–51. Tested on 51.1.
 

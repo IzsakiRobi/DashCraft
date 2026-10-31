@@ -26,7 +26,6 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         settings.bind('show-badges', badges, 'active', Gio.SettingsBindFlags.DEFAULT);
         group.add(badges);
         page.add(group);
-        const closeIconPreferences = this._addIconPreferences(window, page, settings);
 
         const appearance = new Adw.PreferencesGroup({
             title: 'Dock background',
@@ -83,6 +82,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         restoreRow.activatable_widget = restore;
         appearance.add(restoreRow);
         page.add(appearance);
+        const closeIconPreferences = this._addIconPreferences(window, page, settings);
 
         const updateTransparency = () => {
             const value = settings.get_int('background-transparency');
@@ -198,7 +198,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         });
         window.add(page);
         window.add(panelPage);
-        window.set_default_size(560, 560);
+        window.set_default_size(560, 820);
     }
     /* ----- Show Apps Preferences ----- */
 
