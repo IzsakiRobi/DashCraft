@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.native-dash" path="/org/gnome/shell/extensions/native-dash/">
+    <key name="show-dock" type="b">
+      <default>true</default>
+      <summary>Show/Hide</summary>
+      <description>Show the original dash on the desktop, or leave it in the overview.</description>
+    </key>
+    <key name="background-transparency" type="i">
+      <range min="0" max="100"/>
+      <default>0</default>
+      <summary>Dock background transparency</summary>
+      <description>0 is solid, 100 is fully transparent. Icons and badges stay opaque.</description>
+    </key>
+    <key name="background-color" type="s">
+      <default>'#38383c'</default>
+      <summary>Dock background color</summary>
+      <description>Background RGB color in #rrggbb notation.</description>
+    </key>
+    <key name="custom-background" type="b">
+      <default>true</default>
+      <summary>Use custom dock background</summary>
+      <description>When false, use the system theme's original dash appearance.</description>
+    </key>
+    <key name="show-badges" type="b">
+      <default>true</default>
+      <summary>Show badges</summary>
+    </key>
+    <key name="panel-transparency" type="i">
+      <range min="0" max="100"/>
+      <default>0</default>
+      <summary>Panel background transparency</summary>
+      <description>0 uses the original background, 100 makes it transparent.</description>
+    </key>
+  </schema>
+</schemalist>
