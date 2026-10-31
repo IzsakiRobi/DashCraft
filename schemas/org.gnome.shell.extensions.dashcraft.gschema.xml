@@ -22,6 +22,16 @@
       <summary>Use custom dock background</summary>
       <description>When false, use the system theme's original dash appearance.</description>
     </key>
+    <key name="autohide" type="b">
+      <default>false</default>
+      <summary>Autohide</summary>
+      <description>Slide the dock down to a five-pixel strip until hovered.</description>
+    </key>
+    <key name="intellihide" type="b">
+      <default>false</default>
+      <summary>Intelihide</summary>
+      <description>Hide the dock only when a window overlaps its visible area.</description>
+    </key>
     <key name="show-apps-icon" type="s">
       <default>''</default>
       <summary>Show Apps icon</summary>

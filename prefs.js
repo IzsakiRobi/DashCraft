@@ -82,6 +82,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         restoreRow.activatable_widget = restore;
         appearance.add(restoreRow);
         page.add(appearance);
+        this._addVisibilityPreferences(page, settings);
         const closeIconPreferences = this._addIconPreferences(window, page, settings);
 
         const updateTransparency = () => {
@@ -210,7 +211,40 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         });
         window.add(page);
         window.add(panelPage);
-        window.set_default_size(560, 820);
+        window.set_default_size(560, 900);
+    }
+
+    /* ----- Dock Visibility Preferences ----- */
+
+    _addVisibilityPreferences(page, settings) {
+        const group = new Adw.PreferencesGroup({title: 'Dock visibility'});
+        const controls = new Gtk.Box({
+            spacing: 20,
+            margin_start: 16,
+            margin_end: 16,
+            margin_top: 14,
+            margin_bottom: 14,
+        });
+        const switches = [
+            ['autohide', 'Autohide', 'Hide until hovered'],
+            ['intellihide', 'Intelihide', 'Hide when a window overlaps the dock'],
+        ];
+        for (const [key, title, tooltip] of switches) {
+            const box = new Gtk.Box({spacing: 12, hexpand: true});
+            box.append(new Gtk.Label({label: title, xalign: 0, hexpand: true}));
+            const toggle = new Gtk.Switch({valign: Gtk.Align.CENTER, tooltip_text: tooltip});
+            settings.bind(key, toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+            toggle.connect('notify::active', () => {
+                if (toggle.active)
+                    settings.set_boolean(key === 'autohide' ? 'intellihide' : 'autohide', false);
+            });
+            box.append(toggle);
+            controls.append(box);
+        }
+        const row = new Adw.PreferencesRow();
+        row.set_child(controls);
+        group.add(row);
+        page.add(group);
     }
 
     /* ----- Panel Colors ----- */
@@ -256,7 +290,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
     /* ----- Show Apps Preferences ----- */
 
     _addIconPreferences(window, page, settings) {
-        const group = new Adw.PreferencesGroup({title: 'Show Apps icon'});
+        const group = new Adw.PreferencesGroup({title: '“Show Apps” icon'});
         const controls = new Gtk.Box({
             spacing: 16,
             margin_start: 16,

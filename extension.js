@@ -3,6 +3,7 @@ import GObject from 'gi://GObject';
 import St from 'gi://St';
 
 import {Animations} from './Animations.js';
+import {Autohide} from './Autohide.js';
 import {Badges} from './Badges.js';
 import {Colors} from './Colors.js';
 import {Icons} from './Icons.js';
@@ -77,9 +78,12 @@ export default class DashCraft extends Extension {
         this._panel = new Panel(this._settings);
         this._colors = new Colors(this._dash, this._settings);
         this._icons = new Icons(this._dash, this._settings);
-        this._menu = new Menu(this._dash, () => this.openPreferences());
+        this._menu = new Menu(this._dash, () => this.openPreferences(),
+            () => this._autohide?.queueSync());
         this._badges = new Badges(this._dash, this._settings);
         this._animations = new Animations(this._dash, () => this._desktop);
+        this._autohide = new Autohide(this._host, this._dash, this._settings,
+            () => this._desktop, () => this._menu.isOpen);
         this._syncLocation();
     }
 
@@ -110,18 +114,22 @@ export default class DashCraft extends Extension {
         this._dash.setMaxSize(monitor.width, Math.round(monitor.height * 0.16));
         this._host.set_position(monitor.x, monitor.y + monitor.height -
             this._dash.get_preferred_height(monitor.width)[1]);
+        this._autohide?.queueSync();
     }
 
     _position() {
         const monitor = Main.layoutManager.primaryMonitor;
-        if (monitor)
+        if (monitor) {
             this._host.set_position(monitor.x, monitor.y + monitor.height - this._host.height);
+            this._autohide?.queueSync();
+        }
     }
 
     _restoreDash() {
         if (!this._desktop)
             return;
         this._desktop = false;
+        this._autohide?.sync();
         this._host.remove_child(this._dash);
         this._parent.remove_child(this._slot);
         this._layout._dash = this._dash;
@@ -134,6 +142,8 @@ export default class DashCraft extends Extension {
     /* ----- Cleanup ----- */
 
     disable() {
+        this._autohide?.destroy();
+        this._autohide = null;
         this._animations?.destroy();
         this._badges?.destroy();
         this._colors?.destroy();

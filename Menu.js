@@ -7,9 +7,10 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 /* ----- Show Apps Context Menu ----- */
 
 export class Menu {
-    constructor(dash, openPreferences) {
+    constructor(dash, openPreferences, visibilityChanged) {
         this._button = dash.showAppsButton;
         this._openPreferences = openPreferences;
+        this._visibilityChanged = visibilityChanged;
         this._menu = null;
         this._manager = new PopupMenu.PopupMenuManager(this._button);
         this._gesture = new Clutter.ClickGesture({
@@ -19,6 +20,10 @@ export class Menu {
         this._gesture.connect('recognize', () => this._open());
         this._button.add_action(this._gesture);
         this._hidingId = Main.overview.connect('hiding', () => this._menu?.close());
+    }
+
+    get isOpen() {
+        return this._menu?.isOpen ?? false;
     }
 
     _open() {
@@ -31,6 +36,7 @@ export class Menu {
             Main.uiGroup.add_child(this._menu.actor);
             this._menu.actor.hide();
             this._manager.addMenu(this._menu);
+            this._menu.connect('open-state-changed', () => this._visibilityChanged());
         }
         this._button._delegate.label.hide();
         this._menu.open();
@@ -42,6 +48,6 @@ export class Menu {
         Main.overview.disconnect(this._hidingId);
         this._button.remove_action(this._gesture);
         this._menu?.destroy();
-        this._button = this._gesture = this._menu = this._manager = this._openPreferences = null;
+        this._button = this._gesture = this._menu = this._manager = this._openPreferences = this._visibilityChanged = null;
     }
 }
