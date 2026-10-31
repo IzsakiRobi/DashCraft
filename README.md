@@ -12,7 +12,11 @@ GNOME Shell 50–51. Tested on 51.1.
 
 ## Install
 
-Run `./install.sh` from the cloned repository, or install the extension ZIP from [Releases](https://github.com/IzsakiRobi/DashCraft/releases).
+Run `./install.sh` from the cloned repository, or download the ZIP from [Releases](https://github.com/IzsakiRobi/DashCraft/releases) and install it:
+
+```sh
+gnome-extensions install dashcraft@ostricks.com.shell-extension.zip
+```
 
 Log out and back in, then enable **DashCraft**.
 
