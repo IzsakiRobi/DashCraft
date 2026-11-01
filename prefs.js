@@ -240,7 +240,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         });
         window.add(page);
         window.add(panelPage);
-        window.set_default_size(560, 820);
+        window.set_default_size(560, 830);
     }
 
     /* ----- Dock Visibility Preferences ----- */
