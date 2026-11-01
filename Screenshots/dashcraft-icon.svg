@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>dashCraft</title>
+  <desc>Dark rounded dock with four equal square app tiles in blue, black, white and green. The white tile has a red notification badge. A soft ground shadow sits beneath the dock.</desc>
+  <defs>
+    <linearGradient id="dock" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#606662"/>
+      <stop offset="1" stop-color="#454b47"/>
+    </linearGradient>
+    <linearGradient id="blue" x2="0" y2="1"><stop stop-color="#62a0ea"/><stop offset="1" stop-color="#3584e4"/></linearGradient>
+    <linearGradient id="green" x2="0" y2="1"><stop stop-color="#8ff0a4"/><stop offset="1" stop-color="#33d17a"/></linearGradient>
+    <linearGradient id="black" x2="0" y2="1"><stop stop-color="#45434b"/><stop offset="1" stop-color="#241f31"/></linearGradient>
+    <linearGradient id="white" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#deddda"/></linearGradient>
+    <linearGradient id="badge" x2="0" y2="1"><stop stop-color="#f66171"/><stop offset="1" stop-color="#e01b24"/></linearGradient>
+    <filter id="ground-shadow" x="-15%" y="-150%" width="130%" height="400%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+  <!-- Soft horizontal ground shadow, following the supplied elementary-style reference. -->
+  <ellipse cx="256" cy="367" rx="224" ry="9" fill="#000000" opacity=".30" filter="url(#ground-shadow)"/>
+  <rect x="24" y="202" width="464" height="160" rx="44" fill="#242b28"/>
+  <rect x="24" y="190" width="464" height="160" rx="44" fill="url(#dock)"/>
+  <rect x="25" y="191" width="462" height="158" rx="43" fill="none" stroke="#ffffff" stroke-opacity=".10" stroke-width="2"/>
+  <!-- Four identical rounded square faces with equal spacing. -->
+  <rect x="54" y="228" width="80" height="80" rx="22" fill="#1c71d8"/>
+  <rect x="54" y="222" width="80" height="80" rx="22" fill="url(#blue)"/>
+  <path d="M76 224h36a20 20 0 0 1 20 20" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="2" stroke-linecap="round"/>
+  <rect x="162" y="228" width="80" height="80" rx="22" fill="#17151e"/>
+  <rect x="162" y="222" width="80" height="80" rx="22" fill="url(#black)"/>
+  <path d="M184 224h36a20 20 0 0 1 20 20" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="2" stroke-linecap="round"/>
+  <rect x="270" y="228" width="80" height="80" rx="22" fill="#9a9996"/>
+  <rect x="270" y="222" width="80" height="80" rx="22" fill="url(#white)"/>
+  <path d="M292 224h36a20 20 0 0 1 20 20" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="2" stroke-linecap="round"/>
+  <rect x="378" y="228" width="80" height="80" rx="22" fill="#26a269"/>
+  <rect x="378" y="222" width="80" height="80" rx="22" fill="url(#green)"/>
+  <path d="M400 224h36a20 20 0 0 1 20 20" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="94" cy="329" r="4" fill="#99c1f1"/>
+  <circle cx="202" cy="329" r="4" fill="#c0bfbc"/>
+  <!-- Font-independent badge on the white tile. -->
+  <circle cx="347" cy="221" r="29" fill="#424844"/>
+  <circle cx="347" cy="221" r="25" fill="#a51d2d"/>
+  <circle cx="347" cy="218" r="25" fill="url(#badge)"/>
+  <path d="M341 212l7-6h3v24h-6v-16l-4 3z" fill="#ffffff"/>
+</svg>
