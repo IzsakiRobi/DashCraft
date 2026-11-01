@@ -26,7 +26,8 @@ export class Panel {
         this._file = file;
         this._loaded = false;
         try {
-            for (const key of ['panel-transparency', 'panel-background-color', 'panel-items-color'])
+            for (const key of ['panel-transparency', 'panel-background-color', 'panel-items-color',
+                'panel-items-shadow', 'panel-shadow-color'])
                 this._connect(settings, `changed::${key}`, () => this._updateColor());
             this._connect(global.display, 'window-created', (_display, window) => this._watchWindow(window));
             this._connect(global.workspace_manager, 'active-workspace-changed', () => this._sync());
@@ -77,6 +78,15 @@ export class Panel {
                 `color: ${items} !important; } ` +
                 `${panel} .workspace-dot { background-color: ${items} !important; }`;
         }
+        const panel = `#panel.${MANAGED_CLASS}`;
+        const savedShadow = this._settings.get_string('panel-shadow-color');
+        const shadowColor = /^#[0-9a-f]{6}$/i.test(savedShadow) ? savedShadow : '#000000';
+        const rgbShadow = [1, 3, 5].map(offset => parseInt(shadowColor.slice(offset, offset + 2), 16)).join(', ');
+        const shadow = this._settings.get_boolean('panel-items-shadow')
+            ? `0 1px 2px rgba(${rgbShadow}, 0.65)` : 'none';
+        css += `${panel}, ${panel} .panel-button, ${panel} StLabel { text-shadow: ${shadow} !important; } ` +
+            `${panel} StIcon { icon-shadow: ${shadow} !important; } ` +
+            `${panel} .workspace-dot { box-shadow: ${shadow} !important; }`;
         if (this._loaded)
             this._theme.unload_stylesheet(this._file);
         this._loaded = false;

@@ -22,6 +22,15 @@
       <summary>Use custom dock background</summary>
       <description>When false, use the system theme's original dash appearance.</description>
     </key>
+    <key name="border-enabled" type="b">
+      <default>false</default>
+      <summary>Dock border highlight</summary>
+      <description>A subtle top edge highlight that fades down the sides.</description>
+    </key>
+    <key name="border-color" type="s">
+      <default>'#ffffff'</default>
+      <summary>Dock border color</summary>
+    </key>
     <key name="autohide" type="b">
       <default>false</default>
       <summary>Autohide</summary>
@@ -50,6 +59,14 @@
       <default>''</default>
       <summary>Panel items color</summary>
       <description>Global text, symbolic icon and workspace indicator color. Empty uses the system theme.</description>
+    </key>
+    <key name="panel-items-shadow" type="b">
+      <default>false</default>
+      <summary>Panel items shadow</summary>
+    </key>
+    <key name="panel-shadow-color" type="s">
+      <default>'#000000'</default>
+      <summary>Panel shadow color</summary>
     </key>
     <key name="panel-transparency" type="i">
       <range min="0" max="100"/>

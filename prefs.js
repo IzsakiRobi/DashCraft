@@ -12,13 +12,14 @@ export default class DashCraftPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
         const page = new Adw.PreferencesPage({title: 'Dash', icon_name: 'view-app-grid-symbolic'});
-        const group = new Adw.PreferencesGroup();
+        const group = new Adw.PreferencesGroup({title: 'Visibility'});
         const row = new Adw.SwitchRow({
             title: 'Show/Hide',
             subtitle: 'Show the native dash on the desktop. Off: overview only.',
         });
         settings.bind('show-dock', row, 'active', Gio.SettingsBindFlags.DEFAULT);
         group.add(row);
+        this._addVisibilityPreferences(group, settings);
         const badges = new Adw.SwitchRow({
             title: 'Show Badges',
             subtitle: 'Show application counters and notification badges.',
@@ -70,6 +71,9 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         const appearanceRow = new Adw.PreferencesRow();
         appearanceRow.set_child(controls);
         appearance.add(appearanceRow);
+        const borderColorId = this._addColor(appearance, settings, 'border-color', 'Border color', '#ffffff', {
+            toggle: 'border-enabled',
+        });
         const restoreRow = new Adw.ActionRow({
             title: 'System appearance',
             subtitle: 'Restore the original dash background from your system theme.',
@@ -82,7 +86,6 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         restoreRow.activatable_widget = restore;
         appearance.add(restoreRow);
         page.add(appearance);
-        this._addVisibilityPreferences(page, settings);
         const closeIconPreferences = this._addIconPreferences(window, page, settings);
 
         const updateTransparency = () => {
@@ -119,7 +122,8 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         });
         const updateMode = () => {
             const custom = settings.get_boolean('custom-background');
-            restore.sensitive = custom;
+            restore.sensitive = custom || settings.get_boolean('border-enabled') ||
+                settings.get_string('border-color') !== '#ffffff';
             appearance.description = custom
                 ? '0%: solid · 100%: transparent'
                 : 'System theme · adjust the slider or color to customize';
@@ -128,6 +132,8 @@ export default class DashCraftPreferences extends ExtensionPreferences {
             settings.reset('background-color');
             settings.reset('background-transparency');
             settings.set_boolean('custom-background', false);
+            settings.reset('border-enabled');
+            settings.reset('border-color');
         });
         updateMode();
 
@@ -163,22 +169,34 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         panelRow.set_child(panelControls);
         panelGroup.add(panelRow);
         const panelColorIds = [
-            this._addPanelColor(panelGroup, settings, 'panel-background-color', 'Panel Background Color', '#000000'),
-            this._addPanelColor(panelGroup, settings, 'panel-items-color', 'Items Color', '#ffffff'),
+            this._addColor(panelGroup, settings, 'panel-background-color', 'Panel Background Color', '#000000'),
+            this._addColor(panelGroup, settings, 'panel-items-color', 'Items Color', '#ffffff'),
         ];
+        const shadowGroup = new Adw.PreferencesGroup({title: 'Shadow'});
+        const shadowToggle = new Adw.SwitchRow({title: 'Items shadow'});
+        settings.bind('panel-items-shadow', shadowToggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+        shadowGroup.add(shadowToggle);
+        panelColorIds.push(this._addColor(shadowGroup, settings, 'panel-shadow-color', 'Shadow color', '#000000', {
+            sensitive: 'panel-items-shadow',
+        }));
+        const panelRestoreGroup = new Adw.PreferencesGroup();
         const panelRestoreRow = new Adw.ActionRow({title: 'System appearance'});
         const panelRestore = new Gtk.Button({label: 'Restore original', valign: Gtk.Align.CENTER});
         panelRestoreRow.add_suffix(panelRestore);
         panelRestoreRow.activatable_widget = panelRestore;
-        panelGroup.add(panelRestoreRow);
+        panelRestoreGroup.add(panelRestoreRow);
         panelPage.add(panelGroup);
+        panelPage.add(shadowGroup);
+        panelPage.add(panelRestoreGroup);
         const updatePanel = () => {
             const value = settings.get_int('panel-transparency');
             panelScale.set_value(value);
             panelPercentage.label = `${value}%`;
             panelRestore.sensitive = value !== 0 ||
                 settings.get_string('panel-background-color') !== '' ||
-                settings.get_string('panel-items-color') !== '';
+                settings.get_string('panel-items-color') !== '' ||
+                settings.get_boolean('panel-items-shadow') ||
+                settings.get_string('panel-shadow-color') !== '#000000';
         };
         updatePanel();
         panelScale.connect('value-changed', () => {
@@ -187,14 +205,20 @@ export default class DashCraftPreferences extends ExtensionPreferences {
                 settings.set_int('panel-transparency', value);
         });
         panelRestore.connect('clicked', () => {
-            for (const key of ['panel-transparency', 'panel-background-color', 'panel-items-color'])
+            for (const key of ['panel-transparency', 'panel-background-color', 'panel-items-color',
+                'panel-items-shadow', 'panel-shadow-color'])
                 settings.reset(key);
         });
 
         /* ----- Settings Lifecycle ----- */
 
         const ids = [
+            borderColorId,
             ...panelColorIds,
+            settings.connect('changed::border-enabled', updateMode),
+            settings.connect('changed::border-color', updateMode),
+            settings.connect('changed::panel-items-shadow', updatePanel),
+            settings.connect('changed::panel-shadow-color', updatePanel),
             settings.connect('changed::panel-background-color', updatePanel),
             settings.connect('changed::panel-items-color', updatePanel),
             settings.connect('changed::panel-transparency', updatePanel),
@@ -216,8 +240,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
 
     /* ----- Dock Visibility Preferences ----- */
 
-    _addVisibilityPreferences(page, settings) {
-        const group = new Adw.PreferencesGroup({title: 'Dock visibility'});
+    _addVisibilityPreferences(group, settings) {
         const controls = new Gtk.Box({
             spacing: 20,
             margin_start: 16,
@@ -244,12 +267,11 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         const row = new Adw.PreferencesRow();
         row.set_child(controls);
         group.add(row);
-        page.add(group);
     }
 
-    /* ----- Panel Colors ----- */
+    /* ----- Color Controls ----- */
 
-    _addPanelColor(group, settings, key, title, fallback) {
+    _addColor(group, settings, key, title, fallback, {toggle = null, sensitive = toggle} = {}) {
         const row = new Adw.ActionRow({title});
         const button = new Gtk.ColorDialogButton({
             dialog: new Gtk.ColorDialog({title, modal: true, with_alpha: false}),
@@ -258,8 +280,17 @@ export default class DashCraftPreferences extends ExtensionPreferences {
             height_request: 40,
             tooltip_text: title,
         });
+        if (toggle) {
+            const enabled = new Gtk.Switch({valign: Gtk.Align.CENTER, tooltip_text: `Enable ${title.toLowerCase()}`});
+            settings.bind(toggle, enabled, 'active', Gio.SettingsBindFlags.DEFAULT);
+            row.add_suffix(enabled);
+            row.activatable_widget = enabled;
+        } else {
+            row.activatable_widget = button;
+        }
+        if (sensitive)
+            settings.bind(sensitive, button, 'sensitive', Gio.SettingsBindFlags.GET);
         row.add_suffix(button);
-        row.activatable_widget = button;
         group.add(row);
         let updating = false;
         const update = () => {
