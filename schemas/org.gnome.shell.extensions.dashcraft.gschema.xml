@@ -27,6 +27,12 @@
       <summary>Dock border highlight</summary>
       <description>A subtle top edge highlight that fades down the sides.</description>
     </key>
+    <key name="border-width" type="d">
+      <range min="0.0" max="10.0"/>
+      <default>0.85</default>
+      <summary>Dock border width</summary>
+      <description>Highlight thickness in logical pixels, up to 10 pixels.</description>
+    </key>
     <key name="border-color" type="s">
       <default>'#ffffff'</default>
       <summary>Dock border color</summary>

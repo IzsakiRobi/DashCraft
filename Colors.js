@@ -14,13 +14,14 @@ export class Colors {
         dash.insert_child_above(this._border, dash._background);
         this._connections = [
             'background-transparency', 'background-color', 'custom-background',
-            'border-enabled', 'border-color',
+            'border-enabled', 'border-color', 'border-width',
         ].map(key => settings.connect(`changed::${key}`, () => this._sync()));
         this._sync();
     }
 
     _sync() {
-        this._border.visible = this._settings.get_boolean('border-enabled');
+        this._border.visible = this._settings.get_boolean('border-enabled') &&
+            this._settings.get_double('border-width') > 0;
         this._border.queue_repaint();
         const custom = this._settings.get_boolean('custom-background');
         if (!custom) {
@@ -56,10 +57,10 @@ export class Colors {
 
 /* ----- Dock Edge Highlight ----- */
 
-function drawBorder(cr, width, height, radii, color, scale) {
-    if (width <= 0 || height <= 0)
+function drawBorder(cr, width, height, radii, color, scale, thickness) {
+    if (width <= 0 || height <= 0 || thickness <= 0)
         return;
-    const inset = 0.6 * scale;
+    const inset = Math.max(0.6, thickness / 2 + 0.175) * scale;
     const x = inset;
     const y = inset;
     const right = width - inset;
@@ -85,7 +86,7 @@ function drawBorder(cr, width, height, radii, color, scale) {
     light.addColorStopRGBA(0.9, ...rgb, 0);
     light.addColorStopRGBA(1, ...rgb, 0);
     cr.setSource(light);
-    cr.setLineWidth(0.85 * scale);
+    cr.setLineWidth(thickness * scale);
     cr.stroke();
 }
 
@@ -108,7 +109,7 @@ const DockBorder = GObject.registerClass(class DashCraftDockBorder extends St.Dr
                 const saved = settings.get_string('border-color');
                 const color = /^#[0-9a-f]{6}$/i.test(saved) ? saved : '#ffffff';
                 const scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
-                drawBorder(cr, width, height, radii, color, scale);
+                drawBorder(cr, width, height, radii, color, scale, settings.get_double('border-width'));
             } finally {
                 cr.$dispose();
             }

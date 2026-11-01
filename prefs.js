@@ -74,6 +74,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         const borderColorId = this._addColor(appearance, settings, 'border-color', 'Border color', '#ffffff', {
             toggle: 'border-enabled',
         });
+        const borderWidthId = this._addBorderWidth(appearance, settings);
         const restoreRow = new Adw.ActionRow({
             title: 'System appearance',
             subtitle: 'Restore the original dash background from your system theme.',
@@ -123,7 +124,8 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         const updateMode = () => {
             const custom = settings.get_boolean('custom-background');
             restore.sensitive = custom || settings.get_boolean('border-enabled') ||
-                settings.get_string('border-color') !== '#ffffff';
+                settings.get_string('border-color') !== '#ffffff' ||
+                settings.get_double('border-width') !== 0.85;
             appearance.description = custom
                 ? '0%: solid · 100%: transparent'
                 : 'System theme · adjust the slider or color to customize';
@@ -134,6 +136,7 @@ export default class DashCraftPreferences extends ExtensionPreferences {
             settings.set_boolean('custom-background', false);
             settings.reset('border-enabled');
             settings.reset('border-color');
+            settings.reset('border-width');
         });
         updateMode();
 
@@ -214,9 +217,11 @@ export default class DashCraftPreferences extends ExtensionPreferences {
 
         const ids = [
             borderColorId,
+            borderWidthId,
             ...panelColorIds,
             settings.connect('changed::border-enabled', updateMode),
             settings.connect('changed::border-color', updateMode),
+            settings.connect('changed::border-width', updateMode),
             settings.connect('changed::panel-items-shadow', updatePanel),
             settings.connect('changed::panel-shadow-color', updatePanel),
             settings.connect('changed::panel-background-color', updatePanel),
@@ -267,6 +272,38 @@ export default class DashCraftPreferences extends ExtensionPreferences {
         const row = new Adw.PreferencesRow();
         row.set_child(controls);
         group.add(row);
+    }
+
+    /* ----- Border Width ----- */
+
+    _addBorderWidth(group, settings) {
+        const row = new Adw.ActionRow({title: 'Border width'});
+        const scale = new Gtk.Scale({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            adjustment: new Gtk.Adjustment({lower: 0, upper: 10, step_increment: 0.05, page_increment: 1}),
+            digits: 2,
+            draw_value: false,
+            width_request: 180,
+            valign: Gtk.Align.CENTER,
+            tooltip_text: 'Dock border width in pixels',
+        });
+        const value = new Gtk.Label({width_chars: 7, xalign: 1, css_classes: ['dim-label']});
+        row.add_suffix(scale);
+        row.add_suffix(value);
+        group.add(row);
+        settings.bind('border-enabled', row, 'sensitive', Gio.SettingsBindFlags.GET);
+        const update = () => {
+            const width = settings.get_double('border-width');
+            scale.set_value(width);
+            value.label = `${Number(width.toFixed(2))} px`;
+        };
+        update();
+        scale.connect('value-changed', () => {
+            const width = Math.round(scale.get_value() * 100) / 100;
+            if (settings.get_double('border-width') !== width)
+                settings.set_double('border-width', width);
+        });
+        return settings.connect('changed::border-width', update);
     }
 
     /* ----- Color Controls ----- */
