@@ -1,4 +1,8 @@
 <p align="center">
+# DashCraft
+</p>
+
+<p align="center">
   <img src="Screenshots/dashcraft-icon.svg" alt="DashCraft" width="256" height="256">
 </p>
 
@@ -16,7 +20,6 @@
   </a>
 </p>
 
-# DashCraft
 
 The original GNOME dash on your desktop, with:
 
