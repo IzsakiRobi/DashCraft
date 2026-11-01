@@ -1,6 +1,4 @@
-<p align="center">
-# DashCraft
-</p>
+<h1 align="center">DashCraft</h1>
 
 <p align="center">
   <img src="Screenshots/dashcraft-icon.svg" alt="DashCraft" width="256" height="256">
@@ -19,7 +17,6 @@
     <img src="Screenshots/Panel-Settings.png" alt="Panel settings" height="250">
   </a>
 </p>
-
 
 The original GNOME dash on your desktop, with:
 
