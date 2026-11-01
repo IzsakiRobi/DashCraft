@@ -100,7 +100,8 @@ const DockBorder = GObject.registerClass(class DashCraftDockBorder extends St.Dr
             reactive: false,
         });
         this._background = background;
-        background.connectObject('notify::allocation', () => this.queue_repaint(),
+        this._bounds = null;
+        background.connectObject('notify::allocation', () => this._syncGeometry(),
             'notify::visible', () => this.queue_repaint(), this);
         this.connect('repaint', area => {
             const cr = area.get_context();
@@ -127,6 +128,18 @@ const DockBorder = GObject.registerClass(class DashCraftDockBorder extends St.Dr
                 cr.$dispose();
             }
         });
+    }
+
+    _syncGeometry() {
+        if (!this._background.has_allocation())
+            return;
+        const box = this._background.get_allocation_box();
+        const bounds = [box.x1, box.y1, box.x2, box.y2];
+        if (this._bounds?.every((value, index) => value === bounds[index]))
+            return;
+        this._bounds = bounds;
+        this.queue_relayout();
+        this.queue_repaint();
     }
 
     vfunc_get_preferred_width(forHeight) {
