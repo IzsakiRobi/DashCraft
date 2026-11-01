@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Screenshots/dashcraft-icon.svg" alt="DashCraft" width="512" height="512">
+  <img src="Screenshots/dashcraft-icon.svg" alt="DashCraft" width="256" height="256">
 </p>
 
 <p align="center">
