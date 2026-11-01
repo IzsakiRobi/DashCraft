@@ -2,17 +2,17 @@
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/IzsakiRobi/DashCraft/main/Screenshots/dashCraft-Screen-Small.png">
-    <img src="Screenshots/dashCraft-Screen-Small.png" alt="DashCraft on the desktop" height="400">
+    <img src="Screenshots/dashCraft-Screen-Small.png" alt="DashCraft on the desktop" height="200">
   </a>
 </p>
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/IzsakiRobi/DashCraft/main/Screenshots/Dash-Settings.png">
-    <img src="Screenshots/Dash-Settings.png" alt="Dash settings" height="400">
+    <img src="Screenshots/Dash-Settings.png" alt="Dash settings" height="200">
   </a>
   &nbsp;&nbsp;
   <a href="https://raw.githubusercontent.com/IzsakiRobi/DashCraft/main/Screenshots/Panel-Settings.png">
-    <img src="Screenshots/Panel-Settings.png" alt="Panel settings" height="400">
+    <img src="Screenshots/Panel-Settings.png" alt="Panel settings" height="200">
   </a>
 </p>
 
