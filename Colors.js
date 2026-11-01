@@ -99,6 +99,7 @@ const DockBorder = GObject.registerClass(class DashCraftDockBorder extends St.Dr
             y_align: Clutter.ActorAlign.FILL,
             reactive: false,
         });
+        this._background = background;
         background.connectObject('notify::allocation', () => this.queue_repaint(),
             'notify::visible', () => this.queue_repaint(), this);
         this.connect('repaint', area => {
@@ -128,11 +129,11 @@ const DockBorder = GObject.registerClass(class DashCraftDockBorder extends St.Dr
         });
     }
 
-    vfunc_get_preferred_width() {
-        return [0, 0];
+    vfunc_get_preferred_width(forHeight) {
+        return this._background.get_preferred_width(forHeight);
     }
 
-    vfunc_get_preferred_height() {
-        return [0, 0];
+    vfunc_get_preferred_height(forWidth) {
+        return this._background.get_preferred_height(forWidth);
     }
 });
