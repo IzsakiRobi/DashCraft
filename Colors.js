@@ -93,16 +93,28 @@ function drawBorder(cr, width, height, radii, color, scale, thickness) {
 const DockBorder = GObject.registerClass(class DashCraftDockBorder extends St.DrawingArea {
     _init(background, settings) {
         super._init({
-            x_expand: true,
-            y_expand: true,
+            x_expand: false,
+            y_expand: false,
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.FILL,
             reactive: false,
         });
+        background.connectObject('notify::allocation', () => this.queue_repaint(),
+            'notify::visible', () => this.queue_repaint(), this);
         this.connect('repaint', area => {
             const cr = area.get_context();
             try {
-                const [width, height] = area.get_surface_size();
+                if (!background.visible || !background.has_allocation() || !area.has_allocation())
+                    return;
+                const bounds = background.get_allocation_box();
+                const canvas = area.get_allocation_box();
+                const x = bounds.x1 - canvas.x1;
+                const y = bounds.y1 - canvas.y1;
+                const width = bounds.x2 - bounds.x1;
+                const height = bounds.y2 - bounds.y1;
+                cr.rectangle(x, y, width, height);
+                cr.clip();
+                cr.translate(x, y);
                 const node = background.get_theme_node();
                 const radii = [St.Corner.TOPLEFT, St.Corner.TOPRIGHT, St.Corner.BOTTOMRIGHT, St.Corner.BOTTOMLEFT]
                     .map(corner => node.get_border_radius(corner));
